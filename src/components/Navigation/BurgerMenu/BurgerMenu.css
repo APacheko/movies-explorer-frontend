@@ -10,6 +10,7 @@
 
 .navigation__burger-btn:hover {
   opacity: 0.7;
+  transition: .2s linear; 
 }
 
 .navigation__burger-container {
@@ -45,6 +46,7 @@
 
 .navigation__btn-close:hover {
   opacity: 0.7;
+  transition: .2s linear; 
 }
 
 .navigation__burger-popup {
@@ -78,7 +80,7 @@
 
 .navigation__link-burger_active {
   padding-bottom: 4px;
-  border-bottom: 2px solid#FFFFFF;
+  border-bottom: 2px solid #FFFFFF;
 }
 
 .navigation__link-burger_type_account {

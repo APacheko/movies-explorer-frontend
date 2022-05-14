@@ -1,14 +1,12 @@
 import React from "react";
-import "./Movies.css";
+import "./SavedMovies.css";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import SearchForm from "../SearchForm/SearchForm";
 import MoviesCardList from "../MoviesCardList/MoviesCardList";
-import MoviesButton from "../MoviesButton/MoviesButton";
-// import Preloader from "../Preloader/Preloader";
 
 
-function Movies() {
+function SavedMovies() {
 
   return (
     <>
@@ -16,10 +14,9 @@ function Movies() {
       <main className="content">
       <SearchForm />
       <MoviesCardList />
-      <MoviesButton />
       </main>
       <Footer />
     </>
   )
 }
-export default Movies;
+export default SavedMovies;

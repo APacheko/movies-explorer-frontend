@@ -8,7 +8,7 @@ function Footer() {
         <p className="footer__copyright">&copy; 2022</p>
         <ul className="footer__links">
           <li>
-            <a className="footer__link" href="https://github.com/APacheko/react-mesto-api-full" target="_blank" rel="noopener noreferrer">
+            <a className="footer__link" href="https://practicum.yandex.ru/" target="_blank" rel="noopener noreferrer">
               Яндекс.Практикум
             </a>
           </li>
