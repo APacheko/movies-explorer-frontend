@@ -1,13 +1,13 @@
 import React from "react";
 import "./Profile.css";
-import Header from "../Header/Header";
+// import Header from "../Header/Header";
 import { Link } from "react-router-dom";
 
 function Profile() {
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <div className="profile">
         <h1 className="profile__title">Привет, Андрей!</h1>
         <form className="profile__form">

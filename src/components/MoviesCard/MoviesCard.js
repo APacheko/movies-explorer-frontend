@@ -1,3 +1,4 @@
+import React from "react";
 import "./MoviesCard.css";
 import movie from "../../images/movie6.jpg";
 

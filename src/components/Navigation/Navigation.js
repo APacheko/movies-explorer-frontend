@@ -1,8 +1,7 @@
+import React, { useState, useEffect } from "react";
 import "./Navigation.css";
 import { Route, Switch } from 'react-router-dom';
 import Logo from "../Logo/Logo"
-
-import React, { useState, useEffect } from "react";
 import Menu from "./Menu/Menu";
 import MainMenu from "./MainMenu/MainMenu";
 import MenuBurger from "./BurgerMenu/BurgerMenu";

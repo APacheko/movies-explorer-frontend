@@ -1,3 +1,4 @@
+import React from "react";
 import "./MoviesButton.css";
 
 function MoviesButton() {
