@@ -4,6 +4,8 @@ import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import SearchForm from "../SearchForm/SearchForm";
 import MoviesCardList from "../MoviesCardList/MoviesCardList";
+import MoviesCard from "../MoviesCard/MoviesCard";
+
 
 
 function SavedMovies() {
@@ -13,7 +15,17 @@ function SavedMovies() {
       <Header />
       <main className="content">
       <SearchForm />
-      <MoviesCardList />
+      <MoviesCardList>
+        <MoviesCard 
+          statusBtn = "delete"
+        />
+        <MoviesCard 
+          statusBtn = "delete"
+        />
+        <MoviesCard 
+          statusBtn = "delete"
+        />
+      </MoviesCardList>
       </main>
       <Footer />
     </>

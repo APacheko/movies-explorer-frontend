@@ -1,24 +1,10 @@
 import React from "react";
 import "./MoviesCardList.css"
-import MoviesCard from "../MoviesCard/MoviesCard";
 
-function MoviesCardList() {
+function MoviesCardList({ children }) {
   return (
     <section className="movies">
-      <ul className="movies__list">
-        <MoviesCard />
-        <MoviesCard />
-        <MoviesCard />
-        <MoviesCard />
-        <MoviesCard />
-        <MoviesCard />
-        <MoviesCard />
-        <MoviesCard />
-        <MoviesCard />
-        <MoviesCard />
-        <MoviesCard />
-        <MoviesCard /> 
-      </ul> 
+      <ul className="movies__list">{children}</ul> 
     </section>
   )
 }
