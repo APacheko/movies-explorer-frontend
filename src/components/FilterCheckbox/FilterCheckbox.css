@@ -12,14 +12,15 @@
   width: 36px;
   appearance: none;
   border-radius: 20px;
-  box-shadow: inset -16px 0px 0px 0px #cccccc;
-  background-color: white;
-  border: 2px solid #cccccc;
+  box-shadow: inset -16px 0px 0px 0px #EBEBEB;
+  background-color: #F5F5F5;
+  border: 2px solid #EBEBEB;
   outline: none;
   transition: .15s;
 }
 
 .filter-checkbox__switch:checked {
+  background-color: white;
   box-shadow: inset 16px 0px 0px 0px #3DDC84;
   border: 2px solid #3DDC84;
 }

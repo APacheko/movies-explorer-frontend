@@ -1,12 +1,11 @@
 import React from "react";
 import "./MoviesCardList.css"
-// import MoviesCard from "../MoviesCard/MoviesCard";
+import MoviesCard from "../MoviesCard/MoviesCard";
 
 function MoviesCardList() {
   return (
     <section className="movies">
       <ul className="movies__list">
-        {/* <MoviesCard />
         <MoviesCard />
         <MoviesCard />
         <MoviesCard />
@@ -17,8 +16,9 @@ function MoviesCardList() {
         <MoviesCard />
         <MoviesCard />
         <MoviesCard />
-        <MoviesCard /> */}
-      </ul>
+        <MoviesCard />
+        <MoviesCard /> 
+      </ul> 
     </section>
   )
 }
