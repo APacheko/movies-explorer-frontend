@@ -10,7 +10,7 @@ function Input({
   inputName,
   spanId,
   minLength,
-  maxLength }) {
+  maxLength, }) {
 
   return (
     <>

@@ -13,7 +13,7 @@ function Form({ title, name, onSubmit, textBtn, text, textLink, children, path }
         <fieldset className="form__field">
           {children}
         </fieldset>
-        <button className="form__btn" type="submit" >{textBtn}</button>
+        <button className="form__btn" type="submit" onClick={onSubmit} >{textBtn}</button>
 
       </form>
       <p className="auth__text">{text} <Link to={path} className="auth__link">{textLink}</Link></p>
