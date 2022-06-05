@@ -1,6 +1,7 @@
 import React from 'react';
-import { Route, Switch, Redirect, useHistory } from 'react-router-dom';
-// import ProtectedRoute from "./ProtectedRoute";
+import { Route, Switch, Redirect } from 'react-router-dom';
+import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
+import { CurrentUserContext } from '../context/CurrentUserContext';
 import './App.css';
 import Main from '../Main/Main';
 import NotFound from '../NotFound/NotFound';
@@ -9,42 +10,305 @@ import Login from '../Login/Login';
 import Profile from '../Profile/Profile';
 import Movies from '../Movies/Movies';
 import SavedMovies from '../SavedMovies/SavedMovies';
-import * as auth from '../../utils/auth';
+import * as mainApi from '../../utils/MainApi';
+import * as moviesApi from '../../utils/MoviesApi';
 
 function App() {
 
-  const [isRegister, setIsRegister] = React.useState(false);
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
-  // const history = useHistory();
+  const [isUserChecked, setIsUserChecked] = React.useState(false);
+  const [currentUser, setCurrentUser] = React.useState();
+  const [movies, setMovies] = React.useState([]);
+  const [savedMovies, setSavedMovies] = React.useState([]);
+  const [moviesFiltered, setMoviesFiltered] = React.useState([]);
+  const [savedMoviesFiltered, setSavedMoviesFiltered] = React.useState([]);
+  const [message, setMessage] = React.useState(null);
+  const [preloader, setPreloader] = React.useState(false);
+  const [moviesQty, setMoviesQty] = React.useState(0);
+  const [page, setPage] = React.useState(0);
+  const [showMoreButton, setShowMoreButton] = React.useState(false);
+  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
 
-  function handleRegistration(name, email, password) {
-    auth.register(name, email, password)
-      .then(() => {
-        setIsRegister(true);
-        // history.push('/signin');
-      })
-      .catch((err) => {
-        console.log(err)
-        setIsRegister(false);
-      })
-      console.log(name);
+    function getMoviesQty(page) {
+
+      let defaultQty = 0;
+      let addQty = 0;
+  
+      if (windowWidth < 685) {
+        defaultQty = 5;
+        addQty = 2;
+      } else if (windowWidth < 1101) {
+        defaultQty = 8;
+        addQty = 2;
+      } else {
+        defaultQty = 12;
+        addQty = 3;
+      }
+  
+      const finalQty = defaultQty + addQty * page;
+
+      if (finalQty < moviesFiltered.length) {
+        setShowMoreButton(true);
+      } else {
+        setShowMoreButton(false);
+      }
+      return finalQty;
+    }
+
+  function changeQuantity(){
+      if(moviesQty !== getMoviesQty(0)){
+        setPage(0);
+        setMoviesQty(getMoviesQty(0));
+      }
   }
 
+  React.useEffect(() => {
+    window.addEventListener("resize", function(){setWindowWidth(window.innerWidth)});
+  }, []);
+
+  React.useEffect(() => {
+    changeQuantity();
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [windowWidth]);
+
+  React.useEffect(() => {
+    if (!isLoggedIn) {
+      return;
+    }
+    Promise.all([
+      moviesApi.getMovies(),
+      mainApi.getMovies()
+    ])
+      .then((res) => {
+        const [movies, savedMovies] = res;
+        setMovies(movies);
+        setSavedMovies(savedMovies);
+
+      })
+      .catch(err => console.log(err));
+  }, [isLoggedIn]);
+
+  React.useEffect(() => {
+    handleTokenCheck();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
+  function handleRegistration(name, email, password) {
+    mainApi.register(name, email, password)
+      .then(res => {
+        handleAuthorization(email, password);
+      })
+      .catch((err) => {
+        setMessage(err);
+      })
+  }
+
+  function handleTokenCheck() {
+    const jwt = localStorage.getItem("jwt");
+    if (jwt) {
+      mainApi.checkToken(jwt)
+        .then(() => {
+          setIsLoggedIn(true);
+          getUserDate();
+        })
+        .catch((err) => {
+          console.log(err);
+          setIsLoggedIn(false);
+
+        })
+
+    } else {
+      setIsUserChecked(true);
+    }
+
+  }
+
+  function handleAuthorization(email, password) {
+    mainApi.authorize(email, password)
+      .then(res => {
+        setIsLoggedIn(true);
+        getUserDate();
+      })
+      .catch((err) => {
+        setMessage(err);
+      })
+  }
+
+  function getUserDate() {
+    mainApi.getUserData()
+      .then((res) => {
+        setCurrentUser(res);
+        setIsLoggedIn(true);
+
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setIsUserChecked(true);
+      })
+  }
+
+  function handleUpdateUser(name, email) {
+    mainApi.setUserProfile(name, email)
+      .then((res) => {
+        setCurrentUser(res);
+        setMessage("Данные пользователя изменены")
+      })
+      .catch((err) => {
+        console.log(err);
+        setMessage(err);
+      })
+  }
+
+
+  function handleSignout() {
+    localStorage.removeItem('jwt');
+    setIsLoggedIn(false);
+    setCurrentUser();
+    localStorage.clear();
+    setMoviesFiltered([]);
+    setSavedMoviesFiltered([]);
+  }
+
+  function handleSearchMovies(search, checked) {
+    setMoviesFiltered([]);
+    if (search) {
+      setPreloader(true);
+      setMessage(null);
+      const moviesFilter = movies.filter((movie) => {
+        return movie.nameRU.toLowerCase().includes(search.toLowerCase()) && (!checked || (movie.duration <= 40));
+      })
+      setTimeout(() => {
+        setMoviesFiltered(moviesFilter);
+        setPreloader(false);
+        if (moviesFilter.length === 0) {
+          setMessage("Ничего не найдено")
+        } else {
+          localStorage.setItem('search', JSON.stringify(search));
+          localStorage.setItem('checked', JSON.stringify(checked));
+          localStorage.setItem('moviesFilter', JSON.stringify(moviesFilter));
+        }
+      setMoviesQty(getMoviesQty(0));
+      }, 1000)
+    } else {
+      setMessage("Нужно ввести ключевое слово");
+    }
+  }
+
+  function handleSearchSavedMovies(search, checked) {
+    setMessage(null);
+    const moviesFilter = savedMovies.filter((movie) => {
+      return (!search || movie.nameRU.toLowerCase().includes(search.toLowerCase())) && (!checked || (movie.duration <= 40));
+    })
+    if (moviesFilter.length === 0 && search) {
+      setMessage("Ничего не найдено")
+    } else {
+      localStorage.setItem('searchSaved', JSON.stringify(search));
+      localStorage.setItem('checkedSaved', JSON.stringify(checked));
+      localStorage.setItem('moviesFilterSaved', JSON.stringify(moviesFilter));
+    }
+    setSavedMoviesFiltered(moviesFilter);
+  }
+
+  function handleSaveMovie(movie) {
+    mainApi.saveMovie(movie)
+      .then((newMovie) => {
+        setSavedMovies([newMovie, ...savedMovies]);
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+  }
+
+  function isSaved(movieId) {
+    for (let i = 0; i < savedMovies.length; i++) {
+      if (movieId === savedMovies[i].movieId) return true;
+    }
+    return false;
+  }
+
+  function handleDeleteMovie(movieId) {
+    let id = null;
+    let newSavedMovies = [...savedMovies];
+    for (let i = 0; i < savedMovies.length; i++) {
+      if (movieId === savedMovies[i].movieId) {
+        id = savedMovies[i]._id;
+        newSavedMovies.splice(i, 1);
+        setSavedMovies(newSavedMovies);
+        break;
+      }
+    }
+    mainApi.deleteMovie(id)
+      .then((newMovie) => {
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+  }
+
+
+  function handleAddPageMovies(){
+    setMoviesQty(getMoviesQty(page + 1))
+    setPage(page + 1);
+  }
+
+
   return (
-    <div className="page">
-      <Switch>
-        <Route exact path='/' component={Main} />
-        <Route path='/movies' component={Movies}/>
-        <Route path='/saved-movies' component={SavedMovies}/>
-        <Route path='/profile' component={Profile}/>
-        <Route path='/signin' component={Login}/>
-        <Route path="/signup">
-            {/* {isLoggedIn ? <Redirect to="/movies" /> : <Register onRegister={handleRegistration} />} */}
-            <Register onRegister={handleRegistration} />
+    <CurrentUserContext.Provider value={currentUser}>
+      <div className="page">
+        <Switch>
+          <Route path='/signin'>
+            {isLoggedIn ? <Redirect to="/movies" /> : <Login onLogin={handleAuthorization} message={message} setMessege={setMessage} />}
           </Route>
-        <Route path='*' component={NotFound} />
-      </Switch>
-    </div>
+          <Route path="/signup">
+            {isLoggedIn ? <Redirect to="/movies" /> : <Register onRegister={handleRegistration} message={message} setMessege={setMessage} />}
+          </Route>
+
+          <Route exact path='/'>
+            <Main isLoggedIn={isLoggedIn} />
+          </Route>
+
+          <Route path='/movies'>
+            {isUserChecked ?
+              <ProtectedRoute isLoggedIn={isLoggedIn} component={Movies}
+                movies={moviesFiltered.slice(0, moviesQty)}
+                onSubmit={handleSearchMovies}
+                onSaveMovie={handleSaveMovie}
+                isSaved={isSaved}
+                onDeleteMovie={handleDeleteMovie}
+                message={message}
+                preloader={preloader}
+                setMovies={setMoviesFiltered}
+                page={page}
+                setPage={setPage}
+                showMoreButton={showMoreButton}
+                handleAddPage={handleAddPageMovies} />
+              : null}
+          </Route>
+          <Route path='/saved-movies'>
+            {isUserChecked ?
+              <ProtectedRoute isLoggedIn={isLoggedIn} component={SavedMovies}
+                movies={savedMoviesFiltered}
+                onSubmit={handleSearchSavedMovies}
+                onDeleteMovie={handleDeleteMovie}
+                message={message}
+                moviesOrigin={savedMovies}
+                setMovies={setSavedMoviesFiltered} />
+              : null}
+          </Route>
+          <Route path='/profile'>
+            {isUserChecked ?
+              <ProtectedRoute isLoggedIn={isLoggedIn} component={Profile} onSignOut={handleSignout} onUpdateUser={handleUpdateUser} message={message} />
+              : null}
+          </Route>
+
+
+          <Route path='*' component={NotFound} />
+        </Switch>
+      </div>
+    </CurrentUserContext.Provider>
   );
 }
 
