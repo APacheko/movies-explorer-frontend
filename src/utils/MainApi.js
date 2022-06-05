@@ -1,8 +1,8 @@
-export const BASE_URL = 'https://api.andreypacheco.diplom.nomoredomains.rocks/api';
-// export const BASE_URL = 'http://localhost:3001/api';
+//export const BASE_URL = 'https://api.andreypacheco.diplom.nomoredomains.rocks/api';
+export const BASE_URL = 'http://localhost:3001/api';
 
 const checkResult = (res) => {
-  
+
   return res.json()
     .then((res2) => {
       if (res.ok) {
