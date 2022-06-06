@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch, Redirect } from 'react-router-dom';
+import { Route, Switch, Redirect, useLocation } from 'react-router-dom';
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
 import { CurrentUserContext } from '../context/CurrentUserContext';
 import './App.css';
@@ -21,6 +21,7 @@ function App() {
   const [movies, setMovies] = React.useState([]);
   const [savedMovies, setSavedMovies] = React.useState([]);
   const [moviesFiltered, setMoviesFiltered] = React.useState([]);
+  const [moviesFilteredShow, setMoviesFilteredShow] = React.useState([]);
   const [savedMoviesFiltered, setSavedMoviesFiltered] = React.useState([]);
   const [message, setMessage] = React.useState(null);
   const [preloader, setPreloader] = React.useState(false);
@@ -29,40 +30,54 @@ function App() {
   const [showMoreButton, setShowMoreButton] = React.useState(false);
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
 
-    function getMoviesQty(page) {
+  const location = useLocation();
 
-      let defaultQty = 0;
-      let addQty = 0;
+  React.useEffect(() => {
+    setMessage(null);
+  }, [location]);  
   
-      if (windowWidth < 685) {
-        defaultQty = 5;
-        addQty = 2;
-      } else if (windowWidth < 1101) {
-        defaultQty = 8;
-        addQty = 2;
-      } else {
-        defaultQty = 12;
-        addQty = 3;
-      }
-  
-      const finalQty = defaultQty + addQty * page;
+  React.useEffect(() => {
+    const qty = getMoviesQty(0, moviesFiltered);
+    setMoviesQty(qty)
+    setMoviesFilteredShow(moviesFiltered.slice(0, qty))
+  }, [moviesFiltered]);
 
-      if (finalQty < moviesFiltered.length) {
-        setShowMoreButton(true);
-      } else {
-        setShowMoreButton(false);
-      }
-      return finalQty;
+  function getMoviesQty(page, moviesFilter) {
+
+    let defaultQty = 0;
+    let addQty = 0;
+
+    if (windowWidth < 685) {
+      defaultQty = 5;
+      addQty = 2;
+    } else if (windowWidth < 1101) {
+      defaultQty = 8;
+      addQty = 2;
+    } else {
+      defaultQty = 12;
+      addQty = 3;
     }
 
+    let finalQty = defaultQty + addQty * page;
+    finalQty = finalQty > moviesFilter.length ? moviesFilter.length : finalQty;
+    console.log('moviesShow', finalQty, moviesFilter.length)
+    if (finalQty < moviesFilter.length) {
+      setShowMoreButton(true);
+    } else {
+      setShowMoreButton(false);
+    }
+    return finalQty;
+  }
+
   function changeQuantity(){
-      if(moviesQty !== getMoviesQty(0)){
+      if(moviesFiltered.length && moviesQty !== getMoviesQty(0, moviesFiltered)){
         setPage(0);
-        setMoviesQty(getMoviesQty(0));
+        setMoviesQty(getMoviesQty(0, moviesFiltered));
       }
   }
 
   React.useEffect(() => {
+    setMessage(null);
     window.addEventListener("resize", function(){setWindowWidth(window.innerWidth)});
   }, []);
 
@@ -190,7 +205,8 @@ function App() {
           localStorage.setItem('checked', JSON.stringify(checked));
           localStorage.setItem('moviesFilter', JSON.stringify(moviesFilter));
         }
-      setMoviesQty(getMoviesQty(0));
+        console.log('moviesAll', moviesFilter.length);
+      setMoviesQty(getMoviesQty(0, moviesFilter));
       }, 1000)
     } else {
       setMessage("Нужно ввести ключевое слово");
@@ -250,7 +266,10 @@ function App() {
 
 
   function handleAddPageMovies(){
-    setMoviesQty(getMoviesQty(page + 1))
+
+    const qty = getMoviesQty(page + 1, moviesFiltered);
+    setMoviesQty(qty)
+    setMoviesFilteredShow(moviesFiltered.slice(0, qty))
     setPage(page + 1);
   }
 
@@ -273,7 +292,7 @@ function App() {
           <Route path='/movies'>
             {isUserChecked ?
               <ProtectedRoute isLoggedIn={isLoggedIn} component={Movies}
-                movies={moviesFiltered.slice(0, moviesQty)}
+                movies={moviesFilteredShow}
                 onSubmit={handleSearchMovies}
                 onSaveMovie={handleSaveMovie}
                 isSaved={isSaved}
@@ -284,7 +303,8 @@ function App() {
                 page={page}
                 setPage={setPage}
                 showMoreButton={showMoreButton}
-                handleAddPage={handleAddPageMovies} />
+                handleAddPage={handleAddPageMovies} 
+                />
               : null}
           </Route>
           <Route path='/saved-movies'>
@@ -295,12 +315,16 @@ function App() {
                 onDeleteMovie={handleDeleteMovie}
                 message={message}
                 moviesOrigin={savedMovies}
-                setMovies={setSavedMoviesFiltered} />
+                setMovies={setSavedMoviesFiltered}
+                moviesFiltered={moviesFiltered} />
               : null}
           </Route>
           <Route path='/profile'>
             {isUserChecked ?
-              <ProtectedRoute isLoggedIn={isLoggedIn} component={Profile} onSignOut={handleSignout} onUpdateUser={handleUpdateUser} message={message} />
+              <ProtectedRoute isLoggedIn={isLoggedIn} component={Profile}
+               onSignOut={handleSignout}
+               onUpdateUser={handleUpdateUser}
+               message={message} />
               : null}
           </Route>
 

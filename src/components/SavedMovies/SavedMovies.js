@@ -7,7 +7,7 @@ import MoviesCardList from "../MoviesCardList/MoviesCardList";
 import MoviesCard from "../MoviesCard/MoviesCard";
 import Message from "../Message/Message";
 
-function SavedMovies({ isLoggedIn, movies, onSubmit, onDeleteMovie, message, moviesOrigin, setMovies }) {
+function SavedMovies({ isLoggedIn, movies, onSubmit, onDeleteMovie, message, moviesOrigin, setMovies, moviesFiltered }) {
 
   React.useEffect(() => {
     const search = JSON.parse(localStorage.getItem("searchSaved"));
@@ -21,7 +21,7 @@ function SavedMovies({ isLoggedIn, movies, onSubmit, onDeleteMovie, message, mov
     <>
       <Header isLoggedIn={isLoggedIn} />
       <main className="content">
-        <SearchForm onSubmit={onSubmit} setMovies={setMovies} suffix="Saved"/>
+        <SearchForm onSubmit={onSubmit} setMovies={setMovies} suffix="Saved" moviesFiltered={moviesFiltered}/>
         <MoviesCardList>
         {movies.map( movie => (<MoviesCard movie={movie} key={movie._id} statusBtn="delete" onDeleteMovie = {onDeleteMovie} />))}
         </MoviesCardList>
