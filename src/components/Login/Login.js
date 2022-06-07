@@ -11,6 +11,7 @@ function Login({ onLogin, message, setMessege }) {
   React.useEffect(() => {
     resetForm({});
     setMessege(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleSubmit(e) {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch, Redirect, useLocation } from 'react-router-dom';
+import { Route, Switch, Redirect, useLocation, useHistory } from 'react-router-dom';
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
 import { CurrentUserContext } from '../context/CurrentUserContext';
 import './App.css';
@@ -30,6 +30,7 @@ function App() {
   const [showMoreButton, setShowMoreButton] = React.useState(false);
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
 
+  const history = useHistory();
   const location = useLocation();
 
   React.useEffect(() => {
@@ -40,6 +41,7 @@ function App() {
     const qty = getMoviesQty(0, moviesFiltered);
     setMoviesQty(qty)
     setMoviesFilteredShow(moviesFiltered.slice(0, qty))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moviesFiltered]);
 
   function getMoviesQty(page, moviesFilter) {
@@ -60,7 +62,6 @@ function App() {
 
     let finalQty = defaultQty + addQty * page;
     finalQty = finalQty > moviesFilter.length ? moviesFilter.length : finalQty;
-    console.log('moviesShow', finalQty, moviesFilter.length)
     if (finalQty < moviesFilter.length) {
       setShowMoreButton(true);
     } else {
@@ -90,13 +91,15 @@ function App() {
     if (!isLoggedIn) {
       return;
     }
-    Promise.all([
-      moviesApi.getMovies(),
-      mainApi.getMovies()
-    ])
+    mainApi.getMovies()
+    // Promise.all([
+    //   moviesApi.getMovies(),
+    //   mainApi.getMovies()
+    // ])
       .then((res) => {
-        const [movies, savedMovies] = res;
-        setMovies(movies);
+        const savedMovies = res;
+        // const [movies, savedMovies] = res;
+        // setMovies(movies);
         setSavedMovies(savedMovies);
 
       })
@@ -130,7 +133,7 @@ function App() {
         .catch((err) => {
           console.log(err);
           setIsLoggedIn(false);
-
+          history.push('/signin');
         })
 
     } else {
@@ -185,29 +188,46 @@ function App() {
     localStorage.clear();
     setMoviesFiltered([]);
     setSavedMoviesFiltered([]);
+    setMovies([]);
+  }
+
+  function getAllMovies(){
+
+    if(!movies.length){
+      return moviesApi.getMovies().then(res => {
+        setMovies(res);
+        return res;
+      }).catch(err => {
+        console.log(err);
+        setMessage(err);
+      });
+    } else {
+      return new Promise((resolve, reject) => resolve(movies));
+    }
   }
 
   function handleSearchMovies(search, checked) {
     setMoviesFiltered([]);
     if (search) {
-      setPreloader(true);
-      setMessage(null);
-      const moviesFilter = movies.filter((movie) => {
-        return movie.nameRU.toLowerCase().includes(search.toLowerCase()) && (!checked || (movie.duration <= 40));
+      getAllMovies().then(moviesAll => {
+        setPreloader(true);
+        setMessage(null);
+        const moviesFilter = moviesAll.filter((movie) => {
+          return movie.nameRU.toLowerCase().includes(search.toLowerCase()) && (!checked || (movie.duration <= 40));
+        })
+        setTimeout(() => {
+          setMoviesFiltered(moviesFilter);
+          setPreloader(false);
+          if (moviesFilter.length === 0) {
+            setMessage("Ничего не найдено")
+          } else {
+            localStorage.setItem('search', JSON.stringify(search));
+            localStorage.setItem('checked', JSON.stringify(checked));
+            localStorage.setItem('moviesFilter', JSON.stringify(moviesFilter));
+          }
+        setMoviesQty(getMoviesQty(0, moviesFilter));
+        }, 1000)
       })
-      setTimeout(() => {
-        setMoviesFiltered(moviesFilter);
-        setPreloader(false);
-        if (moviesFilter.length === 0) {
-          setMessage("Ничего не найдено")
-        } else {
-          localStorage.setItem('search', JSON.stringify(search));
-          localStorage.setItem('checked', JSON.stringify(checked));
-          localStorage.setItem('moviesFilter', JSON.stringify(moviesFilter));
-        }
-        console.log('moviesAll', moviesFilter.length);
-      setMoviesQty(getMoviesQty(0, moviesFilter));
-      }, 1000)
     } else {
       setMessage("Нужно ввести ключевое слово");
     }

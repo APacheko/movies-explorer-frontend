@@ -18,7 +18,6 @@ function SearchForm({ onSubmit, setMovies, suffix, moviesFiltered}) {
         const search = JSON.parse(localStorage.getItem(`search${suffix}`));
         const checked = JSON.parse(localStorage.getItem(`checked${suffix}`));
         const moviesFilter = JSON.parse(localStorage.getItem(`moviesFilter${suffix}`));
-        console.log(search, checked, moviesFilter);
         if (search) {
           setKeyword(search);
           setChecked(checked);
@@ -32,11 +31,11 @@ function SearchForm({ onSubmit, setMovies, suffix, moviesFiltered}) {
 
   React.useEffect(() => {
     if(restoreFinished){
-      console.log('checkedUseEffect', keyword, location.pathname)
       if (keyword || location.pathname === '/saved-movies') {
         handleSubmit();
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checked]);
 
   function handleSubmit(e) {
