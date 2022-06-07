@@ -125,7 +125,7 @@ function App() {
   function handleTokenCheck() {
     const jwt = localStorage.getItem("jwt");
     if (jwt) {
-      mainApi.checkToken(jwt)
+      mainApi.checkToken()
         .then(() => {
           setIsLoggedIn(true);
           getUserDate();
