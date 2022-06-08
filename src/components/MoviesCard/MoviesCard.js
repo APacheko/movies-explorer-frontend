@@ -32,7 +32,7 @@ function MoviesCard({ statusBtn, movie, onSaveMovie, onDeleteMovie }) {
     <li className="movie">
       <div className="movie__container">
         <h1 className="movie__title">{movie.nameRU}</h1>
-        <p className="movie__time">{movie.duration}</p>
+        <p className="movie__time">{movie.duration + ' минут'}</p>
       </div>
       <a className="movie__trailerlink" target="blank" href={movie.trailerLink}>
         <img className="movie__poster" src={location.pathname === '/movies' ? serverUrl + movie.image.url : movie.image} alt={movie.nameRU}/>

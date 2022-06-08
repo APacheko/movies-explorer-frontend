@@ -35,14 +35,20 @@ function App() {
 
   React.useEffect(() => {
     setMessage(null);
-  }, [location]);  
-  
+  }, [location]);
+
   React.useEffect(() => {
     const qty = getMoviesQty(0, moviesFiltered);
     setMoviesQty(qty)
     setMoviesFilteredShow(moviesFiltered.slice(0, qty))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setPage(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moviesFiltered]);
+
+  React.useEffect(() => {
+    setMoviesFilteredShow(moviesFiltered.slice(0, moviesQty))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [moviesQty]);
 
   function getMoviesQty(page, moviesFilter) {
 
@@ -70,21 +76,27 @@ function App() {
     return finalQty;
   }
 
-  function changeQuantity(){
-      if(moviesFiltered.length && moviesQty !== getMoviesQty(0, moviesFiltered)){
-        setPage(0);
-        setMoviesQty(getMoviesQty(0, moviesFiltered));
-      }
+  function changeQuantity() {
+    if (moviesFiltered.length && moviesQty !== getMoviesQty(0, moviesFiltered)) {
+      setPage(0);
+      setMoviesQty(getMoviesQty(0, moviesFiltered));
+    }
   }
 
   React.useEffect(() => {
     setMessage(null);
-    window.addEventListener("resize", function(){setWindowWidth(window.innerWidth)});
+
+    const handleResize = function () { setWindowWidth(window.innerWidth) };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   React.useEffect(() => {
     changeQuantity();
-     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowWidth]);
 
   React.useEffect(() => {
@@ -92,16 +104,9 @@ function App() {
       return;
     }
     mainApi.getMovies()
-    // Promise.all([
-    //   moviesApi.getMovies(),
-    //   mainApi.getMovies()
-    // ])
       .then((res) => {
         const savedMovies = res;
-        // const [movies, savedMovies] = res;
-        // setMovies(movies);
         setSavedMovies(savedMovies);
-
       })
       .catch(err => console.log(err));
   }, [isLoggedIn]);
@@ -191,9 +196,9 @@ function App() {
     setMovies([]);
   }
 
-  function getAllMovies(){
+  function getAllMovies() {
 
-    if(!movies.length){
+    if (!movies.length) {
       return moviesApi.getMovies().then(res => {
         setMovies(res);
         return res;
@@ -225,8 +230,11 @@ function App() {
             localStorage.setItem('checked', JSON.stringify(checked));
             localStorage.setItem('moviesFilter', JSON.stringify(moviesFilter));
           }
-        setMoviesQty(getMoviesQty(0, moviesFilter));
+          setMoviesQty(getMoviesQty(0, moviesFilter));
         }, 1000)
+      }).catch(err => {
+        console.log(err);
+        setMessage(err);
       })
     } else {
       setMessage("Нужно ввести ключевое слово");
@@ -285,7 +293,7 @@ function App() {
   }
 
 
-  function handleAddPageMovies(){
+  function handleAddPageMovies() {
 
     const qty = getMoviesQty(page + 1, moviesFiltered);
     setMoviesQty(qty)
@@ -323,8 +331,8 @@ function App() {
                 page={page}
                 setPage={setPage}
                 showMoreButton={showMoreButton}
-                handleAddPage={handleAddPageMovies} 
-                />
+                handleAddPage={handleAddPageMovies}
+              />
               : null}
           </Route>
           <Route path='/saved-movies'>
@@ -342,9 +350,9 @@ function App() {
           <Route path='/profile'>
             {isUserChecked ?
               <ProtectedRoute isLoggedIn={isLoggedIn} component={Profile}
-               onSignOut={handleSignout}
-               onUpdateUser={handleUpdateUser}
-               message={message} />
+                onSignOut={handleSignout}
+                onUpdateUser={handleUpdateUser}
+                message={message} />
               : null}
           </Route>
 
