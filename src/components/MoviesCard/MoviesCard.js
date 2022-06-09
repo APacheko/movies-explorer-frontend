@@ -6,7 +6,7 @@ function MoviesCard({ statusBtn, movie, onSaveMovie, onDeleteMovie }) {
 
   const serverUrl = 'https://api.nomoreparties.co';
   let location = useLocation();
-  
+
   function handleSubmit() {
     const movieData = {
       country: movie.country,
@@ -23,29 +23,41 @@ function MoviesCard({ statusBtn, movie, onSaveMovie, onDeleteMovie }) {
     }
     onSaveMovie(movieData);
   }
-  
+
   function handleDelete() {
     onDeleteMovie(movie.id === undefined ? movie.movieId : movie.id)
   }
-  
+
+  function duration() {
+    if (movie.duration > 60) {
+      return (movie.duration / 60 | 0) + "ч " + movie.duration % 60 + "м"
+    }
+    if (movie.duration === 60) {
+      return (movie.duration / 60) + "ч"
+    } else {
+      return movie.duration + " минут"
+    }
+  }
+
+
   return (
     <li className="movie">
       <div className="movie__container">
         <h1 className="movie__title">{movie.nameRU}</h1>
-        <p className="movie__time">{movie.duration + ' минут'}</p>
+        <p className="movie__time">{duration()}</p>
       </div>
       <a className="movie__trailerlink" target="blank" href={movie.trailerLink}>
-        <img className="movie__poster" src={location.pathname === '/movies' ? serverUrl + movie.image.url : movie.image} alt={movie.nameRU}/>
+        <img className="movie__poster" src={location.pathname === '/movies' ? serverUrl + movie.image.url : movie.image} alt={movie.nameRU} />
       </a>
-       {statusBtn === "save" && (
-         <button className="movie__btn" type="button" onClick={handleSubmit}>Сохранить</button>
-        )}
-       {statusBtn === "delete" && (
-         <button className="movie__btn movie__btn_type_delete" type="button" onClick={handleDelete}></button>
-        )}
-        {statusBtn === "saved" && (
-         <button className="movie__btn movie__btn_type_active" type="button" onClick={handleDelete}></button>
-        )}
+      {statusBtn === "save" && (
+        <button className="movie__btn" type="button" onClick={handleSubmit}>Сохранить</button>
+      )}
+      {statusBtn === "delete" && (
+        <button className="movie__btn movie__btn_type_delete" type="button" onClick={handleDelete}></button>
+      )}
+      {statusBtn === "saved" && (
+        <button className="movie__btn movie__btn_type_active" type="button" onClick={handleDelete}></button>
+      )}
     </li>
   )
 }
