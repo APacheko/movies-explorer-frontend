@@ -1,25 +1,63 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 import "./MoviesCard.css";
-import movie from "../../images/movie6.jpg";
 
-function MoviesCard({ statusBtn }) {
-  
+function MoviesCard({ statusBtn, movie, onSaveMovie, onDeleteMovie }) {
+
+  const serverUrl = 'https://api.nomoreparties.co';
+  let location = useLocation();
+
+  function handleSubmit() {
+    const movieData = {
+      country: movie.country,
+      director: movie.director,
+      duration: movie.duration,
+      year: movie.year,
+      description: movie.description,
+      image: serverUrl + movie.image.url,
+      trailerLink: movie.trailerLink,
+      thumbnail: serverUrl + movie.image.formats.thumbnail.url,
+      nameRU: movie.nameRU,
+      nameEN: movie.nameEN,
+      movieId: movie.id,
+    }
+    onSaveMovie(movieData);
+  }
+
+  function handleDelete() {
+    onDeleteMovie(movie.id === undefined ? movie.movieId : movie.id)
+  }
+
+  function duration() {
+    if (movie.duration > 60) {
+      return (movie.duration / 60 | 0) + "ч " + movie.duration % 60 + "м"
+    }
+    if (movie.duration === 60) {
+      return (movie.duration / 60) + "ч"
+    } else {
+      return movie.duration + " минут"
+    }
+  }
+
+
   return (
     <li className="movie">
       <div className="movie__container">
-        <h1 className="movie__title">В погоне за Бенкси</h1>
-        <p className="movie__time">27 минут</p>
+        <h1 className="movie__title">{movie.nameRU}</h1>
+        <p className="movie__time">{duration()}</p>
       </div>
-      <img className="movie__poster" src={movie} alt="Постер к фильму" />
-       {statusBtn === "save" && (
-         <button className="movie__btn" type="button">Сохранить</button>
-        )}
-       {statusBtn === "delete" && (
-         <button className="movie__btn movie__btn_type_delete" type="button"></button>
-        )}
-        {statusBtn === "saved" && (
-         <button className="movie__btn movie__btn_type_active" type="button"></button>
-        )}
+      <a className="movie__trailerlink" target="blank" href={movie.trailerLink}>
+        <img className="movie__poster" src={location.pathname === '/movies' ? serverUrl + movie.image.url : movie.image} alt={movie.nameRU} />
+      </a>
+      {statusBtn === "save" && (
+        <button className="movie__btn" type="button" onClick={handleSubmit}>Сохранить</button>
+      )}
+      {statusBtn === "delete" && (
+        <button className="movie__btn movie__btn_type_delete" type="button" onClick={handleDelete}></button>
+      )}
+      {statusBtn === "saved" && (
+        <button className="movie__btn movie__btn_type_active" type="button" onClick={handleDelete}></button>
+      )}
     </li>
   )
 }

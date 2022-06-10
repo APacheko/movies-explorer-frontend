@@ -12,24 +12,22 @@
   gap: 32px 30px;
 }
 
-
-
 @media (max-width: 768px) {
   .movies {
     padding: 80px 30px 30px;
   }
 
-  .movies__list{
+  .movies__list {
     gap: 35px 24px;
   }
 }
 
 @media (max-width: 475px) {
-    .movies {
-      padding: 50px 10px 30px;
+  .movies {
+    padding: 50px 10px 30px;
   }
 
-  .movies__list{
+  .movies__list {
     gap: 16px;
   }
-} 
+}
